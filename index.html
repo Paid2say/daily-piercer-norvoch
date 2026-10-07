@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NorVoch — Private Collection Event Program</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a0a;
+            color: #f0ede8;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .deck {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 64px 80px;
+            position: absolute;
+            top: 0; left: 0;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700; line-height: 1.1; }
+        h2 { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 600; color: #f0ede8; margin-bottom: 10px; }
+        h3 { font-family: 'Inter', sans-serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #C9A84C; margin-bottom: 14px; }
+        p  { font-size: 1rem; line-height: 1.75; color: #999; font-weight: 300; }
+
+        .gold { color: #C9A84C; }
+
+        .gold-line {
+            width: 44px; height: 2px;
+            background: #C9A84C;
+            margin: 18px 0;
+        }
+
+        /* ── Logo ── */
+        .logo-mark {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.28em;
+            color: #C9A84C;
+            position: fixed;
+            top: 34px; left: 60px;
+            text-transform: uppercase;
+            z-index: 200;
+        }
+
+        /* ── Nav ── */
+        .nav {
+            position: fixed;
+            bottom: 38px; right: 60px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            z-index: 200;
+        }
+
+        .nav-btn {
+            width: 42px; height: 42px;
+            border: 1px solid #2a2a2a;
+            background: transparent;
+            color: #f0ede8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .nav-btn:hover { border-color: #C9A84C; color: #C9A84C; }
+
+        .slide-counter {
+            font-size: 0.73rem;
+            color: #444;
+            letter-spacing: 0.12em;
+        }
+
+        /* ── Shared slide header ── */
+        .slide-header { margin-bottom: 4px; }
+
+        .body-wide {
+            max-width: 620px;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #999;
+            font-weight: 300;
+        }
+
+        /* ── Stat row ── */
+        .stat-row {
+            display: flex;
+            gap: 48px;
+            margin-top: 48px;
+        }
+
+        .stat {
+            border-left: 2px solid #C9A84C;
+            padding-left: 20px;
+        }
+
+        .stat-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: #C9A84C;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            color: #555;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 7px;
+        }
+
+        /* ── Two-col layouts ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            flex: 1;
+            align-items: start;
+            margin-top: 36px;
+        }
+
+        .two-col-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 32px;
+            flex: 1;
+            align-items: start;
+            margin-top: 36px;
+        }
+
+        /* ── Clean list ── */
+        .clean-list { list-style: none; margin-top: 12px; }
+
+        .clean-list li {
+            font-size: 0.9rem;
+            color: #888;
+            padding: 10px 0;
+            border-bottom: 1px solid #181818;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            font-weight: 300;
+            line-height: 1.55;
+        }
+
+        .clean-list li::before {
+            content: '—';
+            color: #C9A84C;
+            flex-shrink: 0;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: #0f0f0f;
+            border: 1px solid #1e1e1e;
+            padding: 30px;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            color: #f0ede8;
+            margin-bottom: 10px;
+        }
+
+        .card-body {
+            font-size: 0.88rem;
+            color: #777;
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* ── Model comparison cards ── */
+        .model-card {
+            background: #0f0f0f;
+            border: 1px solid #1e1e1e;
+            padding: 36px;
+            position: relative;
+        }
+
+        .model-card.featured { border-color: #C9A84C; }
+
+        .model-card.featured::after {
+            content: 'RECOMMENDED';
+            position: absolute;
+            top: -1px; right: 24px;
+            background: #C9A84C;
+            color: #0a0a0a;
+            font-size: 0.58rem;
+            letter-spacing: 0.2em;
+            padding: 4px 10px;
+            font-weight: 700;
+        }
+
+        .model-label {
+            font-size: 0.63rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: #C9A84C;
+            margin-bottom: 10px;
+        }
+
+        .model-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.45rem;
+            color: #f0ede8;
+            margin-bottom: 16px;
+        }
+
+        .model-desc {
+            font-size: 0.88rem;
+            color: #777;
+            line-height: 1.7;
+        }
+
+        /* ── Example P&L mini table ── */
+        .pl-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 11px 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .pl-label { font-size: 0.85rem; color: #666; }
+        .pl-val   { font-size: 0.85rem; color: #f0ede8; }
+        .pl-val.gold { color: #C9A84C; }
+
+        /* ── Timeline ── */
+        .timeline {
+            display: flex;
+            gap: 0;
+            margin-top: 48px;
+            align-items: flex-start;
+        }
+
+        .tl-item {
+            flex: 1;
+            position: relative;
+        }
+
+        .tl-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 15px; right: 0;
+            width: 50%; height: 1px;
+            background: #1e1e1e;
+        }
+
+        .tl-item:not(:first-child)::before {
+            content: '';
+            position: absolute;
+            top: 15px; left: 0;
+            width: 50%; height: 1px;
+            background: #1e1e1e;
+        }
+
+        .tl-dot {
+            width: 30px; height: 30px;
+            border: 2px solid #C9A84C;
+            border-radius: 50%;
+            background: #0a0a0a;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tl-dot span { font-size: 0.68rem; color: #C9A84C; font-weight: 600; }
+
+        .tl-label {
+            text-align: center;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #f0ede8;
+            margin-bottom: 8px;
+        }
+
+        .tl-desc {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #555;
+            line-height: 1.55;
+            padding: 0 10px;
+        }
+
+        /* ── Pill ── */
+        .pill {
+            display: inline-block;
+            background: #140f04;
+            border: 1px solid #C9A84C;
+            color: #C9A84C;
+            font-size: 0.67rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            margin-bottom: 22px;
+        }
+
+        /* ══════════════════ SLIDE 1 – COVER ══════════════════ */
+        .slide-cover {
+            justify-content: center;
+            background: #0a0a0a;
+        }
+
+        .cover-eyebrow {
+            font-size: 0.63rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: #C9A84C;
+            margin-bottom: 30px;
+        }
+
+        .cover-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 4.8rem;
+            font-weight: 700;
+            line-height: 1.04;
+            max-width: 700px;
+            margin-bottom: 26px;
+        }
+
+        .cover-sub {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 300;
+            max-width: 480px;
+            line-height: 1.75;
+        }
+    </style>
+</head>
+<body>
+
+<div class="logo-mark">NorVoch</div>
+
+<div class="deck">
+
+    <!-- ══ SLIDE 1 – COVER ══ -->
+    <div class="slide slide-cover active" id="slide-1">
+        <div class="cover-eyebrow">Confidential · Studio Partnership Program</div>
+        <div class="cover-title">The Private<br>Collection<span class="gold"> Event.</span></div>
+        <div class="gold-line"></div>
+        <div class="cover-sub">A trunk show model that brings NorVoch's full jewelry inventory directly to your studio — and turns one evening into real revenue for both sides.</div>
+    </div>
+
+    <!-- ══ SLIDE 2 – THE OPPORTUNITY ══ -->
+    <div class="slide" id="slide-2">
+        <div class="slide-header">
+            <h3>The Opportunity</h3>
+            <h2>Your clients want more<br>than an appointment.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <p class="body-wide">High-end piercing clients — the ones who already trust you with their body and their money — want an experience. They want to be in a room where the jewelry is exceptional, the atmosphere is exclusive, and the deal makes sense. Most studios never give them that moment. This is how you change that.</p>
+        <div class="stat-row">
+            <div class="stat">
+                <div class="stat-num">50–100</div>
+                <div class="stat-label">Target pieces sold per event</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">1 Day</div>
+                <div class="stat-label">Setup to close</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">$0</div>
+                <div class="stat-label">Upfront inventory risk</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SLIDE 3 – THE CONCEPT ══ -->
+    <div class="slide" id="slide-3">
+        <div class="slide-header">
+            <h3>How It Works</h3>
+            <h2>A trunk show built<br>for the piercing industry.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <div class="two-col">
+            <div>
+                <p style="font-size:0.95rem; line-height:1.8;">NorVoch brings our full curated inventory to your studio for one exclusive event. We handle the product and the presentation. You handle your people and the space. Together, we turn a few hours into a buying experience your VIP clients will actually remember — and come back for.</p>
+                <p style="font-size:0.95rem; line-height:1.8; margin-top:18px;">No consignment risk on the front end. No awkward sales pitches. Just the right jewelry in the right room, in front of the right people.</p>
+            </div>
+            <div>
+                <ul class="clean-list">
+                    <li>NorVoch arrives with full curated inventory</li>
+                    <li>1–2 NorVoch team members on-site to run product and help with sales</li>
+                    <li>Your studio hosts a private showing for VIP and top clients</li>
+                    <li>Studio staff support — no heavy lifting required</li>
+                    <li>Event runs a few hours; full same-day setup and teardown</li>
+                    <li>Leftover inventory available to purchase at wholesale after the event</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SLIDE 4 – THE EXPERIENCE ══ -->
+    <div class="slide" id="slide-4">
+        <div class="slide-header">
+            <h3>The Event Experience</h3>
+            <h2>Boutique. Branded.<br>Memorable.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <div class="two-col-3">
+            <div class="card">
+                <div class="card-title">The Atmosphere</div>
+                <div class="gold-line" style="width:26px; margin:10px 0 14px;"></div>
+                <div class="card-body">Finger food catering. NorVoch-labeled champagne. A curated jewelry display that feels more like a gallery opening than a retail floor. Your space — elevated for the evening.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">The Gift Bags</div>
+                <div class="gold-line" style="width:26px; margin:10px 0 14px;"></div>
+                <div class="card-body">Every guest receives a NorVoch member bag — premium aftercare, a branded tee, and a curated giveaway item. Something they keep. Something that keeps NorVoch in their hands.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">The Access</div>
+                <div class="gold-line" style="width:26px; margin:10px 0 14px;"></div>
+                <div class="card-body">Guests get first look at pieces they can't browse online. 14K and 18K gold. APP Phase 2 verified. Ethically sourced US materials. This is not a sample sale — it's a collection preview.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SLIDE 5 – CLIENT OFFER MODELS ══ -->
+    <div class="slide" id="slide-5">
+        <div class="slide-header">
+            <h3>Client Offer</h3>
+            <h2>Two ways to make<br>the room move.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <div class="two-col" style="margin-top:32px;">
+            <div class="model-card">
+                <div class="model-label">Option A</div>
+                <div class="model-title">The Savings Event</div>
+                <div class="model-desc">Clients select any piece and save 25–50% off retail. The value is instant and visible — the kind of offer that gets people in the door and keeps them buying. Works best for studios with price-conscious but quality-focused clientele.</div>
+            </div>
+            <div class="model-card featured">
+                <div class="model-label">Option B</div>
+                <div class="model-title">The Free Piercing Event</div>
+                <div class="model-desc">Jewelry sells at full retail. The piercing is complimentary. Clients perceive exceptional value, the studio retains full jewelry margin, and your piercers earn on service too. Works best for studios with a strong reputation on the table.</div>
+            </div>
+        </div>
+        <p style="margin-top:22px; font-size:0.78rem; color:#444;">Studio selects one model per event. NorVoch will advise on what's driven the most movement at comparable studios.</p>
+    </div>
+
+    <!-- ══ SLIDE 6 – THE NUMBERS ══ -->
+    <div class="slide" id="slide-6">
+        <div class="slide-header">
+            <h3>Studio Economics</h3>
+            <h2>Clean. Transparent.<br>Worth the room.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <div class="two-col" style="gap:44px;">
+            <div>
+                <ul class="clean-list">
+                    <li>Studio pays NorVoch <strong style="color:#f0ede8; font-weight:500;">wholesale price</strong> on all jewelry sold at the event</li>
+                    <li>Studio pays a <strong style="color:#C9A84C; font-weight:500;">15% commission</strong> on total jewelry sales to NorVoch</li>
+                    <li>Everything above wholesale + 15% is <strong style="color:#f0ede8; font-weight:500;">the studio's margin to keep</strong></li>
+                    <li>No upfront buy-in. No inventory risk going in.</li>
+                    <li>Unsold pieces can be purchased at <strong style="color:#f0ede8; font-weight:500;">wholesale</strong> after the event closes</li>
+                    <li><strong style="color:#C9A84C; font-weight:500;">$1,600 event fee</strong> to secure the private showing — covers NorVoch travel, hotel, insurance &amp; 25 exclusive giveaway boxes</li>
+                    <li>Studio must sell or purchase the equivalent of <strong style="color:#f0ede8; font-weight:500;">$3,000 minimum</strong></li>
+                </ul>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <!-- Per-piece -->
+                <div class="card" style="padding:18px 22px;">
+                    <div style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#555; margin-bottom:14px;">Per Piece</div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <div style="text-align:center; flex:1; border-right:1px solid #1e1e1e; padding:0 6px;">
+                            <div style="font-family:'Playfair Display',serif; font-size:1.25rem; color:#f0ede8; font-weight:600;">$250</div>
+                            <div style="font-size:0.58rem; color:#555; letter-spacing:0.08em; text-transform:uppercase; margin-top:5px;">Retail</div>
+                        </div>
+                        <div style="text-align:center; flex:1; border-right:1px solid #1e1e1e; padding:0 6px;">
+                            <div style="font-family:'Playfair Display',serif; font-size:1.25rem; color:#888; font-weight:600;">$100</div>
+                            <div style="font-size:0.58rem; color:#555; letter-spacing:0.08em; text-transform:uppercase; margin-top:5px;">Mfr Cost</div>
+                        </div>
+                        <div style="text-align:center; flex:1; border-right:1px solid #1e1e1e; padding:0 6px;">
+                            <div style="font-family:'Playfair Display',serif; font-size:1.25rem; color:#888; font-weight:600;">$15</div>
+                            <div style="font-size:0.58rem; color:#555; letter-spacing:0.08em; text-transform:uppercase; margin-top:5px;">15% Fee</div>
+                        </div>
+                        <div style="text-align:center; flex:1; padding:0 6px;">
+                            <div style="font-family:'Playfair Display',serif; font-size:1.25rem; color:#C9A84C; font-weight:700;">$135</div>
+                            <div style="font-size:0.58rem; color:#C9A84C; letter-spacing:0.08em; text-transform:uppercase; margin-top:5px;">Studio · 54%</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Volume table -->
+                <div class="card" style="padding:18px 22px;">
+                    <div style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#555; margin-bottom:12px;">Volume Breakdown</div>
+                    <div style="display:grid; grid-template-columns:38px 1fr 1fr 1fr 1fr;">
+                        <div style="font-size:0.6rem; color:#444; padding:5px 0; border-bottom:1px solid #1a1a1a;">Pcs</div>
+                        <div style="font-size:0.6rem; color:#444; padding:5px 0; border-bottom:1px solid #1a1a1a; text-align:right;">Retail</div>
+                        <div style="font-size:0.6rem; color:#444; padding:5px 0; border-bottom:1px solid #1a1a1a; text-align:right;">Mfr Cost</div>
+                        <div style="font-size:0.6rem; color:#888; padding:5px 0; border-bottom:1px solid #1a1a1a; text-align:right;">15% Fee</div>
+                        <div style="font-size:0.6rem; color:#C9A84C; padding:5px 0; border-bottom:1px solid #1a1a1a; text-align:right;">Studio</div>
+
+                        <div style="font-size:0.78rem; color:#666; padding:7px 0; border-bottom:1px solid #111;">35</div>
+                        <div style="font-size:0.78rem; color:#666; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$8,750</div>
+                        <div style="font-size:0.78rem; color:#666; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$3,500</div>
+                        <div style="font-size:0.78rem; color:#888; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$525</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$4,725</div>
+
+                        <div style="font-size:0.78rem; color:#666; padding:7px 0; border-bottom:1px solid #111;">50</div>
+                        <div style="font-size:0.78rem; color:#666; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$12,500</div>
+                        <div style="font-size:0.78rem; color:#666; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$5,000</div>
+                        <div style="font-size:0.78rem; color:#888; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$750</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$6,750</div>
+
+                        <div style="font-size:0.78rem; color:#777; padding:7px 0; border-bottom:1px solid #111;">75</div>
+                        <div style="font-size:0.78rem; color:#777; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$18,750</div>
+                        <div style="font-size:0.78rem; color:#777; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$7,500</div>
+                        <div style="font-size:0.78rem; color:#888; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$1,125</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:7px 0; border-bottom:1px solid #111; text-align:right;">$10,125</div>
+
+                        <div style="font-size:0.78rem; color:#f0ede8; padding:7px 0; font-weight:500;">100</div>
+                        <div style="font-size:0.78rem; color:#f0ede8; padding:7px 0; font-weight:500; text-align:right;">$25,000</div>
+                        <div style="font-size:0.78rem; color:#f0ede8; padding:7px 0; font-weight:500; text-align:right;">$10,000</div>
+                        <div style="font-size:0.78rem; color:#888; padding:7px 0; font-weight:500; text-align:right;">$1,500</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:7px 0; font-weight:700; text-align:right;">$13,500</div>
+                    </div>
+                    <div style="margin-top:10px; font-size:0.7rem; color:#3a3a3a;">Studio margin holds at <span style="color:#C9A84C;">54%</span> flat across all volume tiers.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SLIDE 7 – REVENUE CYCLE ══ -->
+    <div class="slide" id="slide-7">
+        <div class="slide-header">
+            <h3>The Bigger Picture</h3>
+            <h2>One event becomes<br>a growth engine.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <p class="body-wide">Studios who run this right don't stop at one event. The momentum — and the leftover inventory — creates a natural path to something bigger.</p>
+        <div class="timeline">
+            <div class="tl-item">
+                <div class="tl-dot"><span>1</span></div>
+                <div class="tl-label">The Event</div>
+                <div class="tl-desc">Private showing for your VIP clients. Revenue hits. Studio earns the margin between wholesale + commission and retail.</div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-dot"><span>2</span></div>
+                <div class="tl-label">Buy the Rest</div>
+                <div class="tl-desc">Purchase remaining inventory at wholesale. Stock your case or fuel the next move.</div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-dot"><span>3</span></div>
+                <div class="tl-label">Studio Wholesale Day</div>
+                <div class="tl-desc">Invite other studios to view remaining inventory at an exclusive location. They buy at wholesale.</div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-dot"><span>4</span></div>
+                <div class="tl-label">Repeat</div>
+                <div class="tl-desc">Revenue funds the next event. The relationship deepens. The cycle compounds.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SLIDE 8 – DAY TWO ══ -->
+    <div class="slide" id="slide-8">
+        <div class="slide-header">
+            <h3>The Studio Wholesale Day</h3>
+            <h2>Day Two is a different<br>kind of event entirely.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <div class="two-col">
+            <div>
+                <p style="font-size:0.95rem; line-height:1.8;">Following the consumer event, NorVoch hosts an exclusive invite-only viewing for studio owners and buyers — held at a private location. This is not a trade show. It's a closed buying session for industry professionals who want real access to premium inventory at real prices.</p>
+                <p style="font-size:0.95rem; line-height:1.8; margin-top:16px;">Studios buy what they want at wholesale — with an additional 10% incentive for attending. Host studios earn credit for every studio referral they bring through the door.</p>
+            </div>
+            <div>
+                <div class="card">
+                    <div class="model-label" style="margin-bottom:14px;">Studio Wholesale Day — At a Glance</div>
+                    <ul class="clean-list">
+                        <li>Invite-only — NorVoch partners and host studio referrals</li>
+                        <li>Exclusive private venue, professional setting</li>
+                        <li>Full remaining inventory on display for purchase</li>
+                        <li>Wholesale pricing + 10% attendance incentive</li>
+                        <li>No public access. Industry professionals only.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SLIDE 9 – WHAT NORVOCH BRINGS ══ -->
+    <div class="slide" id="slide-9">
+        <div class="slide-header">
+            <h3>What We Bring</h3>
+            <h2>NorVoch handles<br>the heavy lift.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <div class="two-col-3">
+            <div class="card">
+                <div class="card-title">The Product</div>
+                <div class="gold-line" style="width:26px; margin:10px 0 14px;"></div>
+                <div class="card-body">Full curated inventory. 14K and 18K gold. APP Phase 2 verified. 100% nickel-free. Ethically sourced US materials. Mill Certificates available on request. The real thing.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">The People</div>
+                <div class="gold-line" style="width:26px; margin:10px 0 14px;"></div>
+                <div class="card-body">1–2 NorVoch team members on-site for the full event. They know the line, they know the quality story, and they know how to close without pressure. Your team stays focused on your clients.</div>
+            </div>
+            <div class="card">
+                <div class="card-title">The Brand</div>
+                <div class="gold-line" style="width:26px; margin:10px 0 14px;"></div>
+                <div class="card-body">NorVoch-labeled champagne. Branded member gift bags — premium aftercare, a branded tee, and curated giveaway items. The experience is branded from arrival to close.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SLIDE 10 – CTA ══ -->
+    <div class="slide" id="slide-10" style="justify-content:center;">
+        <div class="pill">Let's Talk</div>
+        <h2 style="font-size:3rem; max-width:580px; line-height:1.08; margin-bottom:18px;">Ready to bring this<br>to your studio?</h2>
+        <div class="gold-line"></div>
+        <p class="body-wide" style="margin-bottom:44px;">We're selective about which studios we partner with for these events. The right fit is a studio with a strong client base, a commitment to quality, and an interest in building something repeatable — not just a one-night pop-up.</p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="font-size:0.7rem; letter-spacing:0.18em; text-transform:uppercase; color:#C9A84C; margin-bottom:2px;">Contact NorVoch</div>
+            <div style="font-size:1rem; color:#f0ede8; font-weight:300;">[ Name · Phone · Email ]</div>
+            <div style="font-size:1rem; color:#888; font-weight:300;">norvoch.com</div>
+        </div>
+        <div style="margin-top:56px; padding-top:28px; border-top:1px solid #181818; max-width:560px;">
+            <p style="font-size:0.77rem; color:#3a3a3a; line-height:1.7;">NorVoch Body Jewelry — Phase 2 Verified by the APP Body Jewelry Verification Program. All materials ethically sourced in the United States. 14K and 18K gold. 100% nickel-free.</p>
+        </div>
+    </div>
+
+    <!-- ══ SLIDE 11 – PRE-EVENT MARKETING ══ -->
+    <div class="slide" id="slide-11">
+        <div class="slide-header">
+            <h3>NorVoch's Investment</h3>
+            <h2>We don't just show up.<br>We fill the room.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <div class="two-col">
+            <div>
+                <p style="font-size:0.95rem; line-height:1.8;">30 days before your event, NorVoch runs a targeted ad campaign — on our dime. $250–500 in social spend, pointed directly at your market. RSVP required. Exclusive angle. The goal is simple: pack the room so the jewelry moves.</p>
+                <ul class="clean-list">
+                    <li>Launches <strong style="color:#f0ede8; font-weight:500;">30 days out</strong> — timed to build anticipation</li>
+                    <li>Targeted Instagram + Facebook ads in your local market</li>
+                    <li>Lookalike audiences built from the studio's own followers</li>
+                    <li>RSVP-gated event — creates exclusivity, tracks attendance</li>
+                    <li><strong style="color:#C9A84C; font-weight:500;">NorVoch covers the full ad spend</strong> — out of pocket</li>
+                </ul>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div class="card" style="padding:28px;">
+                    <div style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#555; margin-bottom:18px;">Ad ROI — Minimum 35-Piece Event</div>
+                    <div class="pl-row">
+                        <span class="pl-label">NorVoch ad spend</span>
+                        <span class="pl-val">$250–500</span>
+                    </div>
+                    <div class="pl-row">
+                        <span class="pl-label">NorVoch back at 35 pieces</span>
+                        <span class="pl-val gold">$4,025</span>
+                    </div>
+                    <div class="pl-row" style="border-bottom:none; padding-top:16px;">
+                        <span style="font-size:0.82rem; color:#555;">Ad pays for itself before piece 12 sells.</span>
+                    </div>
+                </div>
+                <div class="card" style="padding:24px;">
+                    <div style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#555; margin-bottom:12px;">The Pitch to NorVoch</div>
+                    <p style="font-size:0.85rem; line-height:1.7; color:#666; font-style:italic;">“Turn your existing studio clients into your personal pop-up piercing studio for one night — and let NorVoch pay to fill the seats.”</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SLIDE 12 – THE PIERCER NETWORK ══ -->
+    <div class="slide" id="slide-12">
+        <div class="slide-header">
+            <h3>Phase Two · Brought to You by NorVoch</h3>
+            <h2>The Daily<br>Piercer.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <div class="two-col">
+            <div>
+                <p style="font-size:0.95rem; line-height:1.8;">Some studios want to host the event but don't have enough hands on the floor. NorVoch solves that. A curated network of vetted, tiered piercers — bookable directly through the platform for any private showing. More piercers means more piercings done. More piercings means more jewelry sold. It’s a direct multiplier on the night.</p>
+                <ul class="clean-list" style="margin-top:20px;">
+                    <li>Studios browse and book verified piercers for their event date</li>
+                    <li>Each piercer is tiered by experience and scope of service</li>
+                    <li>NorVoch facilitates payment, vetting, and placement</li>
+                    <li>Master piercers earn commission on jewelry sold — they have skin in the game</li>
+                </ul>
+            </div>
+            <div>
+                <div class="card" style="padding:22px 24px;">
+                    <div style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#555; margin-bottom:14px;">Piercer Tier Structure</div>
+                    <div style="display:grid; grid-template-columns:52px 1fr 80px 60px; gap:0;">
+                        <div style="font-size:0.6rem; color:#444; padding:5px 0; border-bottom:1px solid #1a1a1a;">Tier</div>
+                        <div style="font-size:0.6rem; color:#444; padding:5px 0; border-bottom:1px solid #1a1a1a;">Experience</div>
+                        <div style="font-size:0.6rem; color:#444; padding:5px 0; border-bottom:1px solid #1a1a1a; text-align:right;">Day Rate</div>
+                        <div style="font-size:0.6rem; color:#C9A84C; padding:5px 0; border-bottom:1px solid #1a1a1a; text-align:right;">+Jewelry</div>
+
+                        <div style="font-size:0.78rem; color:#666; padding:8px 0; border-bottom:1px solid #111;">Tier 1</div>
+                        <div style="font-size:0.78rem; color:#666; padding:8px 0; border-bottom:1px solid #111;">Under 5 yrs · Limited scope</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:8px 0; border-bottom:1px solid #111; text-align:right;">$200</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:8px 0; border-bottom:1px solid #111; text-align:right;">10%</div>
+
+                        <div style="font-size:0.78rem; color:#666; padding:8px 0; border-bottom:1px solid #111;">Tier 2</div>
+                        <div style="font-size:0.78rem; color:#666; padding:8px 0; border-bottom:1px solid #111;">Under 10 yrs · Full scope</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:8px 0; border-bottom:1px solid #111; text-align:right;">$250–350</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:8px 0; border-bottom:1px solid #111; text-align:right;">10%</div>
+
+                        <div style="font-size:0.78rem; color:#777; padding:8px 0; border-bottom:1px solid #111;">Tier 3</div>
+                        <div style="font-size:0.78rem; color:#777; padding:8px 0; border-bottom:1px solid #111;">15+ yrs · Masters track</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:8px 0; border-bottom:1px solid #111; text-align:right;">$400–500</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:8px 0; border-bottom:1px solid #111; text-align:right;">10%</div>
+
+                        <div style="font-size:0.78rem; color:#f0ede8; padding:8px 0; font-weight:500;">Master</div>
+                        <div style="font-size:0.78rem; color:#f0ede8; padding:8px 0; font-weight:500;">Certified Master Piercer</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:8px 0; font-weight:700; text-align:right;">$750 + tips</div>
+                        <div style="font-size:0.78rem; color:#C9A84C; padding:8px 0; font-weight:700; text-align:right;">10%</div>
+                    </div>
+                    <div style="margin-top:12px; font-size:0.72rem; color:#3a3a3a;"><span style="color:#C9A84C;">10% jewelry commission</span> applies to all piercers and sales associates on any piece sold during their shift.</div>
+                </div>
+                <!-- Sales Associates Track -->
+                <div class="card" style="padding:20px 24px; border-color:#2a2010;">
+                    <div class="model-label" style="margin-bottom:10px;">Alternative Track · Sales Associates</div>
+                    <p style="font-size:0.83rem; color:#666; line-height:1.7;">Studios can also book <strong style="color:#f0ede8; font-weight:500;">jewelry sales associates</strong> through The Daily Piercer — no piercings required. They work the floor, close jewelry sales, and book piercing appointments at the studio for the <strong style="color:#f0ede8; font-weight:500;">next 2 weeks.</strong> The studio’s own piercer handles all future appointments. Two tracks, one platform.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SLIDE 13 – THE 3-MONTH CAMPAIGN ══ -->
+    <div class="slide" id="slide-13">
+        <div class="slide-header">
+            <h3>The Campaign Structure</h3>
+            <h2>Three months.<br>One packed room.</h2>
+        </div>
+        <div class="gold-line"></div>
+        <div class="two-col-3" style="margin-top:22px;">
+            <div class="card">
+                <div style="font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:#555; margin-bottom:10px;">Months 1–2 · Organic</div>
+                <div class="card-title" style="font-size:1.1rem; margin-bottom:10px;">Build the Buzz</div>
+                <div class="gold-line" style="width:24px; margin:0 0 12px;"></div>
+                <ul class="clean-list" style="margin-top:0;">
+                    <li>NorVoch social team posts event teasers in the local market</li>
+                    <li>Studio promotes the upcoming exclusive showing to their audience</li>
+                    <li>RSVP list builds organically — zero ad spend</li>
+                    <li>Free organic posts drive early awareness and anticipation</li>
+                </ul>
+            </div>
+            <div class="card" style="border-color:#2a2010;">
+                <div style="font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:#C9A84C; margin-bottom:10px;">Month 3 · Paid</div>
+                <div class="card-title" style="font-size:1.1rem; margin-bottom:10px;">Fill the Room</div>
+                <div class="gold-line" style="width:24px; margin:0 0 12px;"></div>
+                <ul class="clean-list" style="margin-top:0;">
+                    <li><strong style="color:#C9A84C; font-weight:500;">$250–500 in paid ads</strong> fires — NorVoch covers the spend</li>
+                    <li>Instagram + Facebook targeted to local jewelry + piercing audience</li>
+                    <li>Lookalike audiences built from the studio’s own followers</li>
+                    <li>RSVP-gated — exclusive framing, real urgency</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div style="font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:#555; margin-bottom:10px;">Event Night + After</div>
+                <div class="card-title" style="font-size:1.1rem; margin-bottom:10px;">Book the Calendar</div>
+                <div class="gold-line" style="width:24px; margin:0 0 12px;"></div>
+                <ul class="clean-list" style="margin-top:0;">
+                    <li>Sales associates book piercing appointments for the <strong style="color:#f0ede8; font-weight:500;">next 2 weeks</strong></li>
+                    <li>Studio piercer’s calendar fills before the event ends</li>
+                    <li>Clients who don’t pierce that night leave with a confirmed future booking</li>
+                    <li>Revenue continues well past the event itself</li>
+                </ul>
+            </div>
+        </div>
+        <div style="margin-top:18px; padding:18px 28px; border:1px solid #C9A84C; background:#0e0b04; display:flex; align-items:center; justify-content:space-between; gap:40px;">
+            <div>
+                <div style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#C9A84C; margin-bottom:8px;">The Hook That Drives Every Campaign</div>
+                <p style="font-size:1rem; color:#f0ede8; font-weight:300; line-height:1.6; margin:0;">Buy jewelry at the show → <strong style="font-weight:600;">Free piercing.</strong> That night, or book it for a later date. Every ad, every post, every invite leads with this.</p>
+            </div>
+            <div style="flex-shrink:0; text-align:center;">
+                <div style="font-family:'Playfair Display',serif; font-size:2.2rem; color:#C9A84C; font-weight:700; line-height:1;">$0</div>
+                <div style="font-size:0.65rem; color:#555; letter-spacing:0.1em; text-transform:uppercase; margin-top:6px;">Studio ad spend</div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /deck -->
+
+<!-- Nav -->
+<div class="nav">
+    <button class="nav-btn" onclick="changeSlide(-1)">←</button>
+    <span class="slide-counter" id="counter">1 / 10</span>
+    <button class="nav-btn" onclick="changeSlide(1)">→</button>
+</div>
+
+<script>
+    let current = 1;
+    const total = 13;
+
+    function changeSlide(dir) {
+        document.getElementById('slide-' + current).classList.remove('active');
+        current = Math.max(1, Math.min(total, current + dir));
+        document.getElementById('slide-' + current).classList.add('active');
+        document.getElementById('counter').textContent = current + ' / ' + total;
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+        if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+    });
+
+    document.querySelector('.deck').addEventListener('click', (e) => {
+        // Don't trigger if clicking a nav button
+        if (e.target.closest('.nav')) return;
+        const x = e.clientX;
+        const third = window.innerWidth / 3;
+        if (x < third) {
+            changeSlide(-1);
+        } else {
+            changeSlide(1);
+        }
+    });
+
+    // Cursor hint
+    const deck = document.querySelector('.deck');
+    deck.style.cursor = 'pointer';
+</script>
+
+</body>
+</html>
